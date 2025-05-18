@@ -6,12 +6,14 @@ from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 import re, string
 import nltk
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
 
-# Set path to locally downloaded nltk_data
+
+# Set up a specific directory for nltk_data
 nltk_data_path = os.path.join(os.path.dirname(__file__), 'nltk_data')
 nltk.data.path.append(nltk_data_path)
+
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
 
 # Initialize app
 app = Flask(__name__)
