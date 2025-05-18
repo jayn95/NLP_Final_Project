@@ -5,8 +5,9 @@ import joblib
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 import re, string
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
+import nltk
+nltk_data_path = os.path.join(os.path.dirname(__file__), 'nltk_data')
+nltk.data.path.append(nltk_data_path)
 
 # Initialize app
 app = Flask(__name__)
