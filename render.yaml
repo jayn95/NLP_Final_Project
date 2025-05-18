@@ -1,4 +1,8 @@
-build:
-  commands:
-    - pip install -r requirements.txt
-    - python download_nltk.py
+services:
+  - type: web
+    name: decode-me-app
+    runtime: python
+    buildCommand: |
+      pip install -r requirements.txt
+      python download_nltk.py
+    startCommand: gunicorn app:app
