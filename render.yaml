@@ -4,5 +4,5 @@ services:
     runtime: python
     buildCommand: |
       pip install -r requirements.txt
-      python download_nltk.py
+      # python download_nltk.py
     startCommand: gunicorn app:app
