@@ -6,13 +6,15 @@ from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 import re, string
 import nltk
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+
+# Set path to locally downloaded nltk_data
 nltk_data_path = os.path.join(os.path.dirname(__file__), 'nltk_data')
 nltk.data.path.append(nltk_data_path)
 
 # Initialize app
 app = Flask(__name__)
-
-# Load model and vectorizer
 
 # Get the directory of the current script (app.py)
 base_dir = os.path.dirname(__file__)
@@ -23,13 +25,13 @@ vectorizer_path = os.path.join(base_dir, 'model', 'vectorizer.pkl')
 label_encoder_path = os.path.join(base_dir, 'model', 'label_encoder.pkl')
 df_path = os.path.join(base_dir, 'data', 'ict_subfields_dataset.csv')
 
-# Load the model and vectorizer
+# Load the model, vectorizer, and label encoder
 model = joblib.load(model_path)
 vectorizer = joblib.load(vectorizer_path)
 label_encoder = joblib.load(label_encoder_path)
 df = pd.read_csv(df_path)
 
-# Ensure dataset is preprocessed
+# Text preprocessing setup
 lemmatizer = WordNetLemmatizer()
 stop_words = set(stopwords.words('english'))
 
@@ -45,10 +47,9 @@ def preprocess_text(text):
 if 'Processed_Text' not in df.columns:
     df['Processed_Text'] = df['Text'].apply(preprocess_text)
 
-# Main route for API
+# Main route for prediction
 @app.route('/predict', methods=['POST'])
 def predict():
-    # Expect a JSON with 3 answers
     answers = request.json.get("answers")
     if not answers or not isinstance(answers, list) or len(answers) != 3:
         return jsonify({"error": "Please provide answers to all 3 questions."}), 400
@@ -65,19 +66,12 @@ def predict():
         predictions.append(df['Subfield'].iloc[top_index])
         similarities.append(similarity[0][top_index])
 
-    # Determine final subfield - majority vote or highest similarity
-    # Option 1: Majority vote
+    # Final subfield decision
     from collections import Counter
     subfield_count = Counter(predictions)
     final_subfield = subfield_count.most_common(1)[0][0]
 
-    # Option 2: If tie or just to be sure, pick the prediction with highest similarity
-    # Uncomment below if you want to use this instead:
-    # max_sim_index = np.argmax(similarities)
-    # final_subfield = predictions[max_sim_index]
-
-    # Get recommended job(s) for final_subfield
-    # For simplicity, pick first matching job in df for that subfield
+    # Get a job recommendation
     final_jobs = df[df['Subfield'] == final_subfield]['Job Title'].unique()
     recommended_job = final_jobs[0] if len(final_jobs) > 0 else "No job found"
 
@@ -87,11 +81,11 @@ def predict():
         "individual_predictions": predictions
     })
 
-# (Optional) Route to frontend HTML
+# (Optional) Render a frontend
 @app.route('/')
 def home():
     return render_template('index.html')
 
-# Run the app
+# Run the server
 if __name__ == '__main__':
     app.run(debug=True)
