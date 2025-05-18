@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ICT Subfield & Job Recommender</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .container { max-width: 500px; margin: auto; }
+        input, textarea, button { width: 100%; margin-top: 10px; padding: 8px; }
+        #result { margin-top: 20px; padding: 10px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>ICT Subfield & Job Recommender</h2>
+        <form id="predictForm">
+            <label>1. What technical tasks or skills do you enjoy most?</label>
+            <textarea id="answer1" rows="2" required></textarea>
+
+            <label>2. Describe a project or work experience you're proud of.</label>
+            <textarea id="answer2" rows="2" required></textarea>
+
+            <label>3. What kind of problems do you like to solve?</label>
+            <textarea id="answer3" rows="2" required></textarea>
+
+            <button type="submit">Get Recommendation</button>
+        </form>
+        <div id="result"></div>
+    </div>
+    <script>
+        document.getElementById('predictForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const answers = [
+                document.getElementById('answer1').value,
+                document.getElementById('answer2').value,
+                document.getElementById('answer3').value
+            ];
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = "Loading...";
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ answers: answers })
+                });
+                const data = await response.json();
+                if (data.error) {
+                    resultDiv.textContent = "Error: " + data.error;
+                } else {
+                    resultDiv.innerHTML = `<strong>Final Recommended Subfield:</strong> ${data.final_subfield}<br>
+                                        <strong>Recommended Job(s):</strong> ${data.recommended_job}<br><br>
+                                        <strong>Individual Predictions:</strong><br>
+                                        1. ${data.individual_predictions[0]}<br>
+                                        2. ${data.individual_predictions[1]}<br>
+                                        3. ${data.individual_predictions[2]}`;
+                }
+            } catch (err) {
+                resultDiv.textContent = "An error occurred. Please try again.";
+            }
+        });
+        </script>
+</body>
+</html>
